@@ -166,50 +166,6 @@ def parse_OFF_building_dataset(main_folder):
     return all_buildings_data
 
 def create_cityjson(buildings=None, output_file="city.json"):
-    # Example buildings if none provided
-    if not buildings:
-        buildings = [
-            {
-                "id": "building_1",
-                "lod": "1.1",
-                "geometry": [
-                    [0, 1, 2, 3],   # floor
-                    [4, 5, 6, 7],   # roof
-                    [0, 1, 5, 4],   # wall 1
-                    [1, 2, 6, 5],   # wall 2
-                    [2, 3, 7, 6],   # wall 3
-                    [3, 0, 4, 7],   # wall 4
-                ],
-                "vertices": [
-                    [0, 0, 0],    # 0 - floor corner
-                    [10, 0, 0],   # 1
-                    [10, 10, 0],  # 2
-                    [0, 10, 0],   # 3
-                    [0, 0, 10],   # 4 - roof corner
-                    [10, 0, 10],  # 5
-                    [10, 10, 10], # 6
-                    [0, 10, 10],  # 7
-                ]
-            },
-            {
-                "id": "building_2",
-                "lod": "1.1",
-                "geometry": [
-                    [[0,1,2,3],[8,9,10,11]],   # floor with hole
-                    [[4,5,6,7],[12,13,14,15]], # roof with hole
-                    [0,1,5,4], [1,2,6,5], [2,3,7,6], [3,0,4,7],  # outer walls
-                    [8,9,13,12], [9,10,14,13], [10,11,15,14], [11,8,12,15]  # inner walls
-                ],
-                "vertices": [
-                    # Outer cube
-                    [20,0,0], [30,0,0], [30,10,0], [20,10,0],
-                    [20,0,10], [30,0,10], [30,10,10], [20,10,10],
-                    # Inner courtyard
-                    [23,3,0], [27,3,0], [27,7,0], [23,7,0],
-                    [23,3,10], [27,3,10], [27,7,10], [23,7,10]
-                ]
-            }
-        ]
 
     # Global vertex list and mapping to deduplicate
     global_vertices = []
