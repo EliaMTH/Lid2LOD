@@ -1,4 +1,4 @@
-# [HEAVY WORK IN PROGRESS, FOR A CLEANER READ AND EXPERIENCE COME BACK SOON! Our apologies in advance]
+# [!!! WORK IN PROGRESS, FOR A SMOOTHER EXPERIENCE COME BACK I A COUPLE OF DAYS! Our apologies in advance]
 
 # Lid2LOD – ADDTITLE
 
@@ -50,8 +50,7 @@ Create an output folder (or let Docker create it).
 ### **Run command (Windows)**
 
 ```powershell
-docker run --rm -v "C:\path\to\my_data:/data" lid2lod_v1 `
-/data/buildings.shp /data/points.las /data/output
+docker run --rm -v "C:\path\to\my_data:/data" lid2lod_v1 /data/buildings.shp /data/points.las /data/output
 ```
 
 ---
@@ -59,8 +58,7 @@ docker run --rm -v "C:\path\to\my_data:/data" lid2lod_v1 `
 ### **Run command (Linux/macOS)**
 
 ```bash
-docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 \
-/data/<buildings.shp> /data/<points.las> /data/<output_folder>
+docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 /data/<buildings.shp> /data/<points.las> /data/<output_folder>
 ```
 
 ## Output
@@ -68,7 +66,11 @@ docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 \
 The output folder should contain:
 
 * triangulated city output
-* LOD geometries
+* CityJSON model
 
 ## ADD REFERENCE
 Todo
+
+## Contacts
+We like any kind of feedback! Please reach us at:
+tommaso.sorgente@cnr.it, chiara.romanengo@cnr.it, elia.moscosothompson@cnr.it
