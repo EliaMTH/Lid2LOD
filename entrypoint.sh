@@ -4,11 +4,10 @@ set -e
 # Input arguments passed to the container
 INPUT1="$1" # <building_footprints.shp>  
 INPUT2="$2" # <points.las>
-INPUT4="$3" # <output_folder> 
+INPUT4="$3" # <output_file_path_and_name> 
 
 # Internal working folder (hidden from the user)
 WORKING_FOLDER="/working_folder"
-mkdir -p "$WORKING_FOLDER"
 
 echo "---------------------------------------"
 echo "Running pt1..."
