@@ -1,4 +1,4 @@
-[HEAVY WORK IN PROGRESS, FOR A CLEANER READ AND EXPERIENCE COME BACK SOON! Apologies in advance]
+# [HEAVY WORK IN PROGRESS, FOR A CLEANER READ AND EXPERIENCE COME BACK SOON! Apologies in advance]
 
 # Lid2LOD – ADDTITLE
 
@@ -20,7 +20,7 @@ The container bundles all required Python scripts and the C++ `triangulate_city`
 * Outputs LOD models into a user-defined folder
 
 
-## 🐳 Building the Docker Image
+## Building the Docker Image
 First, you should have docker on your machine. We tested this project using https://www.docker.com/products/docker-desktop/
 
 From the root of the project run the following command:
