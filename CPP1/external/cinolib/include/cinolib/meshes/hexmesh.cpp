@@ -317,6 +317,49 @@ std::vector<uint> Hexmesh<M,V,E,F,P>::face_sheet(const uint fid) const
 
 template<class M, class V, class E, class F, class P>
 CINO_INLINE
+std::unordered_set<uint> Hexmesh<M,V,E,F,P>::poly_sheet(const uint eid) const
+{
+    std::unordered_set<uint> visited_eids;
+    std::unordered_set<uint> visited_pids;
+    std::queue<uint>         to_visit_eids;
+    to_visit_eids.push(eid);
+    visited_eids.insert(eid);
+
+    while(!to_visit_eids.empty())
+    {
+        const uint eid = to_visit_eids.front();
+        to_visit_eids.pop();
+
+        for(const uint pid : this->adj_e2p(eid))
+        {
+            if(DOES_NOT_CONTAIN(visited_pids,pid))
+            {
+                visited_pids.insert(pid);
+            }
+        }
+        for(const uint fid : this->adj_e2f(eid))
+        {
+            for(const uint fid_eid : this->adj_f2e(fid))
+            {
+                if(fid_eid != eid && !this->edges_are_adjacent(eid,fid_eid))
+                {
+                    if(DOES_NOT_CONTAIN(visited_eids,fid_eid))
+                    {
+                        visited_eids.insert(fid_eid);
+                        to_visit_eids.push(fid_eid);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return visited_pids;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class F, class P>
+CINO_INLINE
 vec3d Hexmesh<M,V,E,F,P>::verts_average(const std::vector<uint> & vids) const
 {
     vec3d res(0,0,0);

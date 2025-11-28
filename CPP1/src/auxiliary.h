@@ -2,8 +2,6 @@
 #define CITY_AUXILIARY
 
 #include <cinolib/meshes/meshes.h>
-// #include <cinolib/gl/glcanvas.h>
-// #include <cinolib/gl/surface_mesh_controls.h>
 
 #include <filesystem>
 
@@ -216,63 +214,12 @@ void print_edge_labels(const AbstractPolygonMesh<M,V,E,P> &m,
         return;
     }
 
-    file << "edge_v0_ID edge_v1_ID street_ID\n";
+    file << "edge_v0_ID edge_v1_ID edge_ID\n";
     for (uint eid=0; eid<m.num_edges(); ++eid) {
         auto verts = m.edge_vert_ids(eid);
         file << verts.front() << " " << verts.back() << " " << m.edge_data(eid).label << "\n";
     }
     file.close();
 }
-
-// template<class M, class V, class E, class P>
-// DrawablePolygonmesh<> convert_to_drawable(const AbstractPolygonMesh<M,V,E,P> &m)
-// {
-//     DrawablePolygonmesh<> dm(m.vector_verts(), m.vector_polys());
-
-//     for (uint pid=0; pid<dm.num_polys(); ++pid) {
-//         dm.poly_data(pid).label = m.poly_data(pid).label;
-//     }
-
-//     for (uint eid=0; eid<dm.num_edges(); ++eid) {
-//         dm.edge_data(eid).label = m.edge_data(eid).label;
-//         dm.edge_data(eid).flags[MARKED] = (dm.edge_data(eid).label != -1);
-//     }
-
-//     for (uint vid=0; vid<dm.num_verts(); ++vid) {
-//         dm.vert_data(vid).label = m.vert_data(vid).label;
-//         dm.vert_data(vid).flags[MARKED] = (dm.vert_data(vid).label != -1);
-//         if (dm.vert_data(vid).label != -1) {
-//             dm.vert_data(vid).color = Color::BLUE();
-//             // gui.push_marker(dm.vert(vid), "", Color::BLUE(), 2);
-//         }
-//     }
-
-//     return dm;
-// }
-
-// template<class M, class V, class E, class P> inline
-// void draw_mesh(const AbstractPolygonMesh<M,V,E,P> &m, const bool close = true)
-// {
-//     DrawablePolygonmesh<M,V,E,P> dm(m.vector_verts(), m.vector_polys());
-//     for (uint vid=0; vid<m.num_verts(); ++vid) {
-//         dm.vert_data(vid) = m.vert_data(vid);
-//     }
-//     for (uint eid=0; eid<m.num_edges(); ++eid) {
-//         dm.edge_data(eid) = m.edge_data(eid);
-//     }
-//     for (uint pid=0; pid<m.num_polys(); ++pid) {
-//         dm.poly_data(pid) = m.poly_data(pid);
-//     }
-//     dm.updateGL();
-
-//     GLcanvas gui(1000, 1000);
-//     gui.push(&dm);
-
-//     SurfaceMeshControls<DrawablePolygonmesh<M,V,E,P>> menu(&dm, &gui, "m");
-//     gui.push(&menu);
-//     gui.launch();
-
-//     if (close) exit(0);
-// }
 
 #endif // CITY_AUXILIARY

@@ -6,7 +6,6 @@
 
 #include "buildings.h"
 #include "auxiliary.h"
-// #include "merge_mesh_at_coincident_vertices_toll.h"
 
 using namespace cinolib;
 
@@ -33,7 +32,6 @@ void add_buildings_to_mesh(Trimesh<> &city,
         // add the building to the city
         uint n = city.num_polys();
         merge_meshes_at_coincident_vertices(city, building, city);
-        // merge_meshes_at_coincident_vertices(city_tmp, building, city, 1e-6);
 
         // label the new polys with the building ID
         int building_ID = extract_directory_ID(building.mesh_data().filename);
@@ -53,7 +51,7 @@ Trimesh<> create_city_mesh(const Trimesh<> &ground,
     // initialize the city with the ground mesh
     Trimesh<> city = ground;
 
-    // copy edge labels (containing streets information)
+    // copy edge labels 
     for (uint eid=0; eid<city.num_edges(); ++eid) {
         city.edge_data(eid).label = ground.edge_data(eid).label;
     }
@@ -76,7 +74,6 @@ Trimesh<> create_city_mesh(const Trimesh<> &ground,
         // add the building to the city
         uint n = city.num_polys();
         merge_meshes_at_coincident_vertices(city, building, city);
-        // merge_meshes_at_coincident_vertices(city_tmp, building, city, 1e-6);
 
         // label the new polys with the building ID
         int building_ID = extract_directory_ID(building.mesh_data().filename);

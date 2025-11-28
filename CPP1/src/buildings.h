@@ -130,8 +130,8 @@ Trimesh<> create_building_mesh(const std::string &building_path)
     /********************************* BUILDING **********************************/
 
     // merge roof and facades
-    Trimesh<> building;
-    merge_meshes_at_coincident_vertices(roof_tri, facades_tri, building);
+    Trimesh<> building = facades_tri;
+//    merge_meshes_at_coincident_vertices(roof_tri, facades_tri, building);
     building.mesh_data().filename = building_path;
 
     // translate back to the original position

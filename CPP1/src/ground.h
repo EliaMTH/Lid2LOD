@@ -5,7 +5,6 @@
 #include <cinolib/merge_meshes_at_coincident_vertices.h>
 
 #include "auxiliary.h"
-#include "streets.h"
 #include "triangulate_with_holes.h"
 
 using namespace cinolib;
@@ -54,8 +53,7 @@ void add_footprint_to_mesh(const Polygonmesh<> &footprint,
 }
 
 Trimesh<> create_ground_mesh(const Polygonmesh<> &boundary,
-                             std::vector<std::string> &buildings_dirs,
-                             std::vector<std::tuple<int,vec3d,vec3d>> &streets)
+                             std::vector<std::string> &buildings_dirs)
 {
     /*************** BOUNDARY ****************/
 
@@ -94,34 +92,6 @@ Trimesh<> create_ground_mesh(const Polygonmesh<> &boundary,
         add_footprint_to_mesh(footprint, ground, holes);
     }
 
-    /*************** STREETS ****************/
-
-    // add the streets to the ground mesh
-    for (int i=streets.size()-1; i>=0; --i) {
-
-        std::tuple<int,vec3d,vec3d> street = streets.at(i);
-
-        // translate the street to the origin and project to the plane z=0
-        std::unordered_map<uint, double> street_z_map;
-        translate_and_project_street(street, center, street_z_map);
-
-        // check that the street is contained within the ground polygon
-        if (!is_street_inside(street, ground, 0)) {
-            std::cout << "  create_ground_mesh - WARNING: street outside the ground polygon, discarded: "
-                      << std::get<0>(street) << std::endl;
-            streets.erase(streets.begin() + i);
-            continue;
-        }
-
-        // append map street_z_map to map z_map
-        std::vector<vec3d> street_verts = { std::get<1>(street), std::get<2>(street) };
-        append_map(street_verts, street_z_map, ground.vector_verts(), z_map);
-
-        // add the street to the mesh and assign a label to the corresponding edges
-        add_street_to_mesh(street, ground);
-    }
-    assert(z_map.size() == ground.num_verts());
-
     /*************** GROUND ****************/
 
     // triangulate the ground with the buildings footprints
@@ -136,9 +106,6 @@ Trimesh<> create_ground_mesh(const Polygonmesh<> &boundary,
     ground_tri.translate(center);
     ground_tri.update_bbox();
     ground_tri.mesh_data().filename = ground.mesh_data().filename;
-
-    // assign labels to edges belonging to a street
-    mark_streets_edges_and_verts(ground, ground_tri);
 
     return ground_tri;
 }
