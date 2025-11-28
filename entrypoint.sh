@@ -24,8 +24,7 @@ set +e   # disable exit-on-error for pt2
 /CPP1/triangulate_city/build/triangulate_city \
     "$WORKING_FOLDER/ground_polygon.off" \
     "$WORKING_FOLDER" \
-    "$INPUT4" \
-    0
+    "$INPUT4"
 
 PT2_EXIT_CODE=$?
 
