@@ -24,7 +24,7 @@ set +e   # disable exit-on-error for pt2
 /CPP1/triangulate_city/build/triangulate_city \
     "$WORKING_FOLDER/ground_polygon.off" \
     "." \
-    "$WORKING_FOLDER/buildings" \
+    "$WORKING_FOLDER" \
     "$INPUT4" \
     0
 
@@ -35,6 +35,19 @@ set -e   # re-enable exit-on-error for the rest of the pipeline
 if [ $PT2_EXIT_CODE -ne 0 ]; then
     echo "WARNING: pt2 failed with exit code $PT2_EXIT_CODE. Skipping to pt3..."
 fi
+
+
+echo "---------------------------------------"
+echo "Checking working directory before pt3..."
+echo "---------------------------------------"
+echo "Working directory full path: $WORKING_FOLDER"
+echo "Contents:"
+ls -Rlh "$WORKING_FOLDER"
+
+echo "---------------------------------------"
+echo "Waiting 10 minutes before continuing..."
+echo "---------------------------------------"
+sleep 600   # 10 minutes
 
 echo "---------------------------------------"
 echo "Running pt3..."

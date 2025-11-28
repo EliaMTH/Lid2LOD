@@ -267,6 +267,7 @@ def create_cityjson(buildings=None, output_file="city.json"):
 ## -------------------------------------------------------------------------------
 
 def main(working_folder,outpath):
+    print
     bb = parse_OFF_building_dataset(working_folder)
     create_cityjson(list(bb.values()), outpath)
 
