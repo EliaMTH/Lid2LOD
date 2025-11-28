@@ -382,7 +382,7 @@ def main(building_footprints,las_path,temp_fold):
             tr = DefineTR(lab, points_build_f.shape[0])
 
             # Export OFF files
-            dirNames = f'./{temp_fold}/building{i+1}'
+            dirNames = f'{temp_fold}/building{i+1}'
             os.makedirs(dirNames, exist_ok=True)
             exportFacades(tr,points,dirNames)
             exportPavement(points_build_f,lab,dirNames)
