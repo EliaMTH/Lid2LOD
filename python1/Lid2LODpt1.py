@@ -95,11 +95,22 @@ def read_shapefile_to_dict(shapefile_path):
 
 def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None): 
     # building and numpy arrays
-
-
-
     X = np.array(M_i['X'], dtype=float)
     Y = np.array(M_i['Y'], dtype=float)
+
+
+    # ----
+    # use_these starts as all True
+    use_these = np.ones_like(X, dtype=bool)
+
+    # Loop from index 1 to end (since MATLAB is 1-based)
+    for j in range(1, len(X)):
+        if not np.isnan(X[j]) and X[j] == X[j-1] and Y[j] == Y[j-1]:
+            use_these[j] = False
+
+    X = X[use_these]
+    Y = Y[use_these]
+    # ----
 
     control = np.where(np.isnan(X))[0]
     xy = np.column_stack((X, Y))  # shape will be (n, 2)
@@ -128,27 +139,18 @@ def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None):
 
     other_aus = other[mask_aus, :]
 
-
-    return other_aus,control,X,Y,xy,building
-
-##
-
-def SelectBuildingsAndLabels(building, i, X, xy, control):
-    # Ensure building is float type
-    building = building.astype(float)
-
     # Initialize label array
-    label = np.full((X.size, 2), i, dtype=float)  # i*ones(numel(X),2)
+    label = np.full(X.size, 1, dtype=float)  # i*ones(numel(X),2)
     lab = 0
 
     # Fill second column of label
     for k in range(X.size):  # Python indexing starts at 0
         if np.any(control == k): 
             lab += 1
-        label[k, 1] = lab
+        label[k] = lab
 
     # Select xy points where label's second column is 0
-    pip = xy[label[:, 1] == 0, :]
+    pip = xy[label == 0, :]
 
     if pip.shape[0] > 1:  # Need at least 2 points for inpolygon
         # Create a polygon path
@@ -158,26 +160,8 @@ def SelectBuildingsAndLabels(building, i, X, xy, control):
         if np.any(in_mask):
             building = building[in_mask, :]
 
-    return building
 
-##
-
-def Define2DProjections(M_i):
-    X = np.array(M_i['X'], dtype=float)
-    Y = np.array(M_i['Y'], dtype=float)
-    
-    xy = []
-    
-    for x, y in zip(X, Y):
-        if np.isnan(x):
-            if xy:  # only remove last row if xy is not empty
-                xy.pop()
-        else:
-            xy.append([x, y])
-    
-    xy = np.array(xy)  # convert list to numpy array
-    
-    return X, xy
+    return other_aus,X,Y,building
 
 ##
 
@@ -230,7 +214,7 @@ def DefineTR(lab, N_abs):
         # Append the extra row after the loop
         tr.append([N + 1 + N_abs, 1 + N, N + s + 1, N+s+1+N_abs])
 
-        N += N_aus
+        N += N_aus + 1
 
     tr = np.array(tr, dtype=int) - 1  # convert to 0-based indexing like MATLAB
     return tr
@@ -325,82 +309,6 @@ def exportRoof(points_build_r, lab, dirNames):
                     fileID.write(f"{idx} ")
             fileID.write('\n')
 
-## Elaborate Polygons
-def ElaboratePoligons(k, xy, control, num_piano, building, other_aus, zMin, 
-                       points_LOD2_facade_ground, points_LOD2_facade_roof):
-    # Check if k+1 is in control
-    if not np.any(k + 1 == control):
-        n_rows = xy.shape[0]
-
-        # Determine XY1 and XY2
-        if k == n_rows - 1 and np.isscalar(control):
-            XY1 = xy[k, :]
-            XY2 = xy[0, :]
-        elif k == n_rows - 1 and len(control) > 1:
-            XY1 = xy[k, :]
-            XY2 = xy[control[-2] + 1, :]
-        else:
-            XY1 = xy[k, :]
-            XY2 = xy[k + 1, :]
-
-        # Create linearly spaced coordinates
-        if abs(XY1[0] - XY2[0]) < 0.1:
-            y_piano = np.linspace(min(XY1[1], XY2[1]), max(XY1[1], XY2[1]), num_piano)
-            x_piano = np.full(num_piano, XY1[0])
-        else:
-            if abs(XY1[1] - XY2[1]) < 0.1:
-                x_piano = np.linspace(min(XY1[0], XY2[0]), max(XY1[0], XY2[0]), num_piano)
-                y_piano = np.full(num_piano, XY1[1])
-            else:
-                m = (XY2[1] - XY1[1]) / (XY2[0] - XY1[0])
-                if not np.isnan(m):
-                    q = XY1[1] - m * XY1[0]
-                    x_piano = np.linspace(min(XY1[0], XY2[0]), max(XY1[0], XY2[0]), num_piano)
-                    y_piano = m * x_piano + q
-                else:
-                    return points_LOD2_facade_ground, points_LOD2_facade_roof  # exit function if plane scenario is not accepted
-
-        # Initialize piano points
-        piano = np.zeros((len(x_piano) * len(y_piano), 3))
-
-        # Build a KD-tree for nearest neighbor search
-        if other_aus.shape[0] > 0:
-            tree = cKDTree(other_aus[:, :2])
-
-        for s in range(len(x_piano)):
-            idx_start = s * len(y_piano)
-            idx_end = (s + 1) * len(y_piano)
-            piano[idx_start:idx_end, 0] = x_piano[s]
-            piano[idx_start:idx_end, 1] = y_piano
-
-            # Find nearest neighbor in other_aus
-            if other_aus.shape[0] > 0:
-                _, I = tree.query([x_piano[s], y_piano[s]])
-                zMin = np.min(other_aus[I, 2])
-
-            zMax = np.max(building[:, 2])
-            zAus = np.linspace(zMin, zMax, num_piano)
-            piano[idx_start:idx_end, 2] = zAus[::-1]
-
-            # Update facade points
-            if s == 0 or s == len(x_piano) - 1:
-                if points_LOD2_facade_ground.shape[0] > 0:
-                    # Check if point already exists
-                    dists = np.linalg.norm(points_LOD2_facade_roof[:, :2] - np.array([x_piano[s], y_piano[s]]), axis=1)
-                    if np.any(dists < 1e-5):
-                        index = np.where((points_LOD2_facade_ground[:, 0] == x_piano[s]) &
-                                         (points_LOD2_facade_ground[:, 1] == y_piano[s]))[0]
-                        if len(index) > 0 and points_LOD2_facade_roof[index, 2] > zMax:
-                            points_LOD2_facade_roof[index, 2] = zMax
-                    else:
-                        points_LOD2_facade_ground = np.vstack([points_LOD2_facade_ground, [x_piano[s], y_piano[s], zMin]])
-                        points_LOD2_facade_roof = np.vstack([points_LOD2_facade_roof, [x_piano[s], y_piano[s], zMax]])
-                else:
-                    points_LOD2_facade_ground = np.vstack([points_LOD2_facade_ground, [x_piano[s], y_piano[s], zMin]])
-                    points_LOD2_facade_roof = np.vstack([points_LOD2_facade_roof, [x_piano[s], y_piano[s], zMax]])
-
-    return points_LOD2_facade_ground, points_LOD2_facade_roof
-
 ## -------------------------------------------------------------------------------
 ## ---------------------------------- MAIN -------------------------------
 ## -------------------------------------------------------------------------------
@@ -412,59 +320,73 @@ def main(building_footprints,las_path,temp_fold):
     xyz, pt_classification = read_las_file(las_path) # Should already be numpy array
 
     other = xyz[pt_classification == 2, :].astype(float)
-    # veget = xyz[pt_classification == 4, :].astype(float)
     xyz = xyz[pt_classification == 6, :].astype(float)
 
 
     ## Read shapefile
     M = read_shapefile_to_dict(building_footprints)
     ## Initialize further variables
-    num_piano = 10
-    zMin = np.mean(other[:, 2])
+    zMin_default = np.mean(other[:, 2])
 
     for i in range(0, len(M)):
-        # Computing other_aus, control, X, Y, xy, zMin, building
-        other_aus,control,X,Y,xy,building = ReduceScopeWhatDoIDo1(xyz,M[i],other)
 
-        if building.shape[0] > 60:
+        # Computing other_aus, control, X, Y, xy, zMin, building
+        other_aus,X,Y,building = ReduceScopeWhatDoIDo1(xyz,M[i],other)
+
+        if building.shape[0] > X.shape[0]:
             if building.shape[0] > 50000:
                 building = building[::10, :]
-            if building.shape[0] > 0:
-                # Compute points_LOD2_*
-                building = SelectBuildingsAndLabels(building,i,X,xy,control)
-                points_LOD2_facade_ground = np.empty((0, 3))
-                points_LOD2_facade_roof = np.empty((0, 3))
-                for k in range(xy.shape[0] - 1):
-                    points_LOD2_facade_ground,points_LOD2_facade_roof = ElaboratePoligons(k,xy,control,num_piano,building,other_aus,zMin,points_LOD2_facade_ground,points_LOD2_facade_roof)
 
-                # Step 1 Organize Data
-                X,xy = Define2DProjections(M[i])
-                lab = DefineLabels(X,i)
-                points_aus_ground = np.zeros((xy.shape[0],6))
+            xy = []
+            for x, y in zip(X, Y):
+                if np.isnan(x):
+                    if xy:  # only remove last row if xy is not empty
+                        xy.pop()
+                else:
+                    xy.append([x, y])
+            
+            xy = np.array(xy)  # convert list to numpy array
 
-                z = np.full((xy.shape[0], 1), np.mean(points_LOD2_facade_ground[:, 2]))
-                xyz_aus = np.hstack([xy, z])
-                points_aus_ground[:, 0:3] = xyz_aus
-                points_aus_ground[:, 4] = i
-                
-                z = np.full((xy.shape[0], 1), np.max(points_LOD2_facade_roof[:, 2]))
-                points_aus_roof = np.ones((xy.shape[0], 6))
-                xyz_aus = np.hstack([xy, z])
-                points_aus_roof[:, 0:3] = xyz_aus
-                points_aus_roof[:, 4] = i
-                
-                points_build_f = points_aus_ground[:, 0:3]
-                points_build_r = points_aus_roof[:, 0:3]
-                points = np.vstack([points_build_f, points_build_r])
-                
-                tr = DefineTR(lab, points_build_f.shape[0])
 
-                # Export OFF files
-                dirNames = f'{temp_fold}/building{i+1}'
-                os.makedirs(dirNames, exist_ok=True)
-                exportFacades(tr,points,dirNames)
-                exportPavement(points_build_f,lab,dirNames)
-                exportRoof(points_build_r,lab,dirNames)
+            # Step 1 Organize Data
+            lab = DefineLabels(X,i)
+
+            if other_aus.shape[0] > 0:
+                tree = cKDTree(other_aus[:, :2])
+                _, I = tree.query(xy)
+                zMin = np.min(other_aus[I, 2])
+            else:
+                zMin = zMin_default
+            zMax = np.max(building[:, 2])
+
+
+
+
+            points_aus_ground = np.zeros((xy.shape[0],6))
+
+            z = np.full((xy.shape[0], 1), zMin)
+            xyz_aus = np.hstack([xy, z])
+            points_aus_ground[:, 0:3] = xyz_aus
+            points_aus_ground[:, 4] = i
+            
+            z = np.full((xy.shape[0], 1), zMax)
+            points_aus_roof = np.ones((xy.shape[0], 6))
+            xyz_aus = np.hstack([xy, z])
+            points_aus_roof[:, 0:3] = xyz_aus
+            points_aus_roof[:, 4] = i
+            
+            points_build_f = points_aus_ground[:, 0:3]
+            points_build_r = points_aus_roof[:, 0:3]
+            points = np.vstack([points_build_f, points_build_r])
+            
+            tr = DefineTR(lab, points_build_f.shape[0])
+
+            # Export OFF files
+            dirNames = f'./{temp_fold}/building{i+1}'
+            os.makedirs(dirNames, exist_ok=True)
+            exportFacades(tr,points,dirNames)
+            exportPavement(points_build_f,lab,dirNames)
+            exportRoof(points_build_r,lab,dirNames)
 
 if __name__ == "__main__":
 
