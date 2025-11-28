@@ -18,9 +18,15 @@ From the root of the project run the following command:
 docker build -t lid2lod_v1 .
 ```
 
-This creates a Docker image named **`lid2lod_v1`**.
+**Warning**: if you edit `entrypoint.sh` or any shell script on Windows, it may be saved with **CRLF** line endings.
+Linux containers expect **LF** only. Using CRLF causes Docker to fail with errors such as:
 
----
+```
+entrypoint.sh: not found
+```
+
+To fix this, configure your editor (e.g., VS Code) to save shell scripts with **LF** by default.
+
 
 ## Running the Pipeline
 
