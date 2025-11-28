@@ -3,6 +3,7 @@ import os
 from scipy.spatial import KDTree
 from scipy.spatial import ConvexHull
 import laspy
+import argparse
 
 def minBoundingBox(X):
     """
@@ -123,90 +124,67 @@ def main(las_path,outname):
     # xy[:, :2] = mBB
     xy = np.hstack((mBB.T, np.zeros((mBB.shape[1], 1))))
 
+# mBB is 2×4 in MATLAB, so transpose to 4×2
+    xy = np.zeros((mBB.shape[1], 3))
+    xy[:, :2] = mBB.T
 
     #------------------------------------------
-    # Expand corners by T = 100
+    # Add small space around BB  (T = 100)
     #------------------------------------------
     T = 100
-    xy_mod = xy.copy()
-
-    xy_mod[0,0] += T;  xy_mod[0,1] -= T
-    xy_mod[1,0] -= T;  xy_mod[1,1] -= T
-    xy_mod[2,0] -= T;  xy_mod[2,1] += T
-    xy_mod[3,0] += T;  xy_mod[3,1] += T
-
-    xy = xy_mod
+    xy[0, 0] += T;   xy[0, 1] -= T
+    xy[1, 0] -= T;   xy[1, 1] -= T
+    xy[2, 0] -= T;   xy[2, 1] += T
+    xy[3, 0] += T;   xy[3, 1] += T
 
     #------------------------------------------
-    # Sample the boundary (num_piano = 15)
+    # REFINE BOUNDARY (XY)
     #------------------------------------------
-    num_piano = 15
-    bound = []
+    xy_res = 15
 
-    for s in range(xy.shape[0] - 1):
-        x1, y1 = xy[s, :2]
-        x2, y2 = xy[s+1, :2]
+    xy_aus = np.vstack((xy, xy[0]))   # append first point to close
 
-        if abs(x1 - x2) > 1.5:
-            x = np.linspace(min(x1, x2), max(x1, x2), num_piano)
-            y = np.full(num_piano, y1)
-        else:
-            y = np.linspace(min(y1, y2), max(y1, y2), num_piano)
-            x = np.full(num_piano, x1)
+    pp_list = []
+    for j in range(4):
+        x_row = np.linspace(xy_aus[j,0], xy_aus[j+1,0], xy_res+1)
+        y_row = np.linspace(xy_aus[j,1], xy_aus[j+1,1], xy_res+1)
+        pts = np.column_stack((x_row[:-1], y_row[:-1]))
+        pp_list.append(pts)
 
-        bound.append(np.column_stack((x, y)))
-
-    # Last segment
-    x1, y1 = xy[-1, :2]
-    x2, y2 = xy[0, :2]
-
-    if abs(x1 - x2) > 1.5:
-        x = np.linspace(min(x1, x2), max(x1, x2), num_piano)
-        y = np.full(num_piano, y1)
-    else:
-        y = np.linspace(min(y1, y2), max(y1, y2), num_piano)
-        x = np.full(num_piano, x1)
-
-    bound.append(np.column_stack((x, y)))
-
-    bound = np.vstack(bound)
-    bound = np.column_stack((bound, np.zeros(len(bound))))
-
-    xy = bound
+    xy = np.vstack(pp_list)
 
     #------------------------------------------
-    # KNN height assignment (MATLAB knnsearch)
+    # Project on ground points "other"
     #------------------------------------------
     tree = KDTree(other[:, :2])
+    _, idx = tree.query(xy[:, :2])
+    xy = np.column_stack((xy, other[idx, 2]))
 
-    for i in range(xy.shape[0]):
-        dist, index = tree.query(xy[i, :2])
-        xy[i, 2] = other[index, 2]
-
-    # Reverse order like MATLAB (end:-1:1)
+    # Reverse (MATLAB: xy = xy(end:-1:1,:))
     xy = xy[::-1, :]
 
     #------------------------------------------
-    # Write OFF file
+    # SAVE OFF FILE
     #------------------------------------------
-    nameFile = outname
+    outpath = outname if outname.endswith(".off") else outname + ".off"
 
-    with open(nameFile, 'w') as f:
+    with open(outpath, "w") as f:
         f.write("OFF\n")
         f.write(f"{xy.shape[0]} 1 0\n")
 
+        # vertices
         for row in xy:
             f.write(f"{row[0]:.8f} {row[1]:.8f} {row[2]:.8f}\n")
 
-        f.write(f"{xy.shape[0]} ")
-        for k in range(xy.shape[0]):
-            f.write(f"{k} ")
-        f.write("\n")
+        # face
+        indices = " ".join(str(i) for i in range(len(xy)))
+        f.write(f"{len(xy)} {indices}\n")
+
+    print("Saved OFF file:", outpath)
 
 
 
 if __name__ == "__main__":
-    import argparse
 
     parser = argparse.ArgumentParser(description="Compute boundary OFF file from LAS input.")
     parser.add_argument("las_path", type=str, help="Path to input .las file")
