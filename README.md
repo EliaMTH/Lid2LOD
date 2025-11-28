@@ -1,4 +1,4 @@
-# [!!! WARNING: we are still completing this repository, for a smoother experience come back next week! Our apologies in advance. If you are interested, send us an email and we will notify you once we're done! Check out contacts below!]
+# [!!! WARNING: we are still completing this repository, for a smoother experience come back next week! Our apologies in advance. If you are interested, send us an email and we will notify you once we're done! Check our contacts below!]
 
 # Lid2LOD – Generating LOD1 Urban Models from Airborne LiDAR
 
