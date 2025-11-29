@@ -180,7 +180,7 @@ def main(las_path,outname):
         indices = " ".join(str(i) for i in range(len(xy)))
         f.write(f"{len(xy)} {indices}\n")
 
-    print("Saved OFF file:", outpath)
+    print("Saved boundary polygon:", outpath)
 
 
 

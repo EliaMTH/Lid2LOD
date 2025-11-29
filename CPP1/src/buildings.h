@@ -7,8 +7,8 @@
 #include <cinolib/meshes/meshes.h>
 #include <cinolib/connected_components.h>
 
-#include "triangulate_with_holes.h"
-#include "auxiliary.h"
+#include <triangulate_with_holes.h>
+#include <auxiliary.h>
 
 using namespace cinolib;
 namespace fs = std::filesystem;

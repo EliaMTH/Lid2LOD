@@ -4,8 +4,8 @@
 #include <cinolib/meshes/meshes.h>
 #include <cinolib/merge_meshes_at_coincident_vertices.h>
 
-#include "auxiliary.h"
-#include "triangulate_with_holes.h"
+#include <auxiliary.h>
+#include <triangulate_with_holes.h>
 
 using namespace cinolib;
 

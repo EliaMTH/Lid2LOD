@@ -30,17 +30,15 @@ RUN pip3 install numpy \
 RUN pip3 install numpy
 
 # ------------------------------------------------------------
-# 3. Copy the C++ repo (triangulate_city + external + src)
+# 3. Copy the C++ repo (build + cinolib + src)
 # ------------------------------------------------------------
-COPY /CPP1/triangulate_city /CPP1/triangulate_city
-COPY /CPP1/external /CPP1/external
-COPY /CPP1/src /CPP1/src
+COPY /CPP1 /CPP1
 
 # ------------------------------------------------------------
 # 4. Build triangulate_city
 # ------------------------------------------------------------
-RUN mkdir -p /CPP1/triangulate_city/build \
-    && cd /CPP1/triangulate_city/build \
+RUN mkdir -p /CPP1/build \
+    && cd /CPP1/build \
     && cmake .. -DCMAKE_BUILD_TYPE=Release \
     && make -j4
 

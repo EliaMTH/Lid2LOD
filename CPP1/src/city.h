@@ -4,8 +4,8 @@
 #include <cinolib/meshes/meshes.h>
 #include <cinolib/merge_meshes_at_coincident_vertices.h>
 
-#include "buildings.h"
-#include "auxiliary.h"
+#include <buildings.h>
+#include <auxiliary.h>
 
 using namespace cinolib;
 

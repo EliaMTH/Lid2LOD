@@ -1,10 +1,10 @@
 #include <cinolib/meshes/meshes.h>
 #include <cinolib/profiler.h>
 
-#include "../src/ground.h"
-#include "../src/buildings.h"
-#include "../src/city.h"
-#include "../src/auxiliary.h"
+#include <ground.h>
+#include <buildings.h>
+#include <city.h>
+#include <auxiliary.h>
 
 using namespace cinolib;
 
@@ -21,8 +21,6 @@ int main(int argc, char *argv[])
     std::string buildings_path = argv[2];
     std::string output_path    = argv[3];
 
-    /*************** CREATE GROUND AND CITY MESH ****************/
-
     Profiler prof;
 
     prof.push("Load data");
@@ -38,21 +36,21 @@ int main(int argc, char *argv[])
     Trimesh<> ground = create_ground_mesh(boundary, buildings_dirs);
     prof.pop();
     if (SAVE) {
-        ground.save((output_path + "/ground.obj").c_str());
+        ground.save((output_path + "/ground_mesh.obj").c_str());
     }
 
     prof.push("Create buildings mesh");
     Trimesh<> buildings = create_buildings_mesh(buildings_dirs);
     prof.pop();
     if (SAVE) {
-        buildings.save((output_path + "/buildings.obj").c_str());
+        buildings.save((output_path + "/buildings_mesh.obj").c_str());
     }
 
     prof.push("Create city mesh");
     Trimesh<> city = create_city_mesh(ground, buildings);
     prof.pop();
     if (SAVE) {
-        city.save((output_path + "/city.obj").c_str());
+        city.save((output_path + "/city_mesh.obj").c_str());
     }
 
     return 0;

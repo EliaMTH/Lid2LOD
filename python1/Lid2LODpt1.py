@@ -387,6 +387,8 @@ def main(building_footprints,las_path,temp_fold):
             exportFacades(tr,points,dirNames)
             exportPavement(points_build_f,lab,dirNames)
             exportRoof(points_build_r,lab,dirNames)
+    
+    print("Saved building polygons:", len(M))
 
 if __name__ == "__main__":
 

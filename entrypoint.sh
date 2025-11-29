@@ -21,7 +21,7 @@ echo "---------------------------------------"
 
 set +e   # disable exit-on-error for pt2
 
-/CPP1/triangulate_city/build/triangulate_city \
+/CPP1/build/triangulate_city \
     "$WORKING_FOLDER/ground_polygon.off" \
     "$WORKING_FOLDER" \
     "$INPUT4"
@@ -37,7 +37,7 @@ fi
 echo "---------------------------------------"
 echo "Running pt3..."
 echo "---------------------------------------"
-python3 /python2/Lid2LODpt2.py "$WORKING_FOLDER" "$INPUT4"
+python3 /python2/Lid2LODpt2.py "$WORKING_FOLDER" "$INPUT4/city_JSON"
 
 echo "---------------------------------------"
 echo "Pipeline complete!"
