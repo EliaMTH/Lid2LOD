@@ -35,29 +35,31 @@ Prepare a folder on your machine containing:
 * A building footprint shapefile
   (should include `.shp`, `.dbf`, `.shx`)
 * A `.las` point cloud file [ADD REQUIREMENTS]
-* Any optional files your scripts need
+* A folder where to store the outputs
 
 You can then run Lid2LOD_v1 by running the following command, depending on your OS.
 
 ### **Run command (Windows)**
 ```powershell
-docker run --rm -v "X:\path\to\my_data:/data" lid2lod_v1 /data/<buildings.shp> /data/<points.las> /data/<output_name>
+docker run --rm -v "X:\path\to\my_data:/data" lid2lod_v1 /data/<buildings_footprints.shp> /data/<point_cloud.las> /data/<output_folder>
 ```
 
 ### **Run command (Linux/macOS)**
 
 ```bash
-docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 /data/<buildings.shp> /data/<points.las> /data/<output_name>
+docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 /data/<buildings_footprints.shp> /data/<point_cloud.las> /data/<output_folder>
 ```
 
 ## Output
 
 The output folder should contain:
 
-* triangulated city (`output_name.off`)
-* CityJSON model (`output_name.city.json`)
+* A mesh containing all buildings (`buildings_mesh.off`)
+* A mesh of the ground (`ground_mesh.off`)
+* A mesh of the city (`city_mesh.off`)
+* A CityJSON model (`city_JSON.city.json`)
 
-## REFERENCE - How to city our work
+## REFERENCE - How to cite our work
 https://diglib.eg.org/items/85255f56-244f-4ee9-a38b-27f1fdf20d48
 
 ## Contacts
