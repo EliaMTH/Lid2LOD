@@ -93,13 +93,29 @@ def read_shapefile_to_dict(shapefile_path):
     
     return M
 
-def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None): 
+def PointSelectionAndDataStructure(xyz = None,M_i = None,other = None): 
+    """
+    Combine las point data and a single shapefile data to indentify the 
+    points of interest.
+    
+    Parameters:
+        xyz (np.ndarray): ?x3 array of XYZ coordinates.
+        M_i (dictionary): one of the dictionaries from read_shapefile_to_dict
+        other (np.ndarray): ?x3 array of XYZ coordinates.
+        
+    Returns:
+        other_aus (np.ndarray): ?x3 array of xyz coordinates of the points around the footprints
+        X (np.array): ?-dimensional array with x-coordinates of the footprints
+        Y (np.array): ?-dimensional array with y-coordinates of the footprints
+        building (np.ndarray): refined ?x3 array of xyz coordinates of the points shaping the building
+    """
     # building and numpy arrays
     X = np.array(M_i['X'], dtype=float)
     Y = np.array(M_i['Y'], dtype=float)
 
 
     # ----
+    # Remove duplicate points (can happen in some footprint shapefiles)
     # use_these starts as all True
     use_these = np.ones_like(X, dtype=bool)
 
@@ -121,7 +137,7 @@ def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None):
     sogliaX = (xMax - xMin) / 500
     sogliaY = (yMax - yMin) / 500
 
-    # Taglio intorno di bbx per semplificare il rangesearch
+    # Restrict xyz pointcloud to make elaboration quicker
 
     mask = (
     (xyz[:, 0] < xMax + sogliaX) & (xyz[:, 0] > xMin - sogliaX) &
@@ -139,7 +155,7 @@ def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None):
 
     other_aus = other[mask_aus, :]
 
-    # Initialize label array
+    # Initialize label array to properly assign polygons with holes.
     label = np.full(X.size, 1, dtype=float)  # i*ones(numel(X),2)
     lab = 0
 
@@ -167,7 +183,9 @@ def ReduceScopeWhatDoIDo1(xyz = None,M_i = None,other = None):
 
 def DefineLabels(X, i):
     """
-    Args:
+    Define labels for proper polygon-hole parsing.
+
+    Parameters:
         X (array-like): Input array of numbers (can contain NaN)
         i (int/float): Label identifier
     
@@ -193,7 +211,9 @@ def DefineLabels(X, i):
 
 def DefineTR(lab, N_abs):
     """   
-    Args:
+    Define triangles (OFF faces).
+
+    Parameters:
         lab (np.ndarray): lab array of shape (N, 2)
         N_abs (int): offset to be added to indices
     
@@ -252,6 +272,15 @@ def exportFacades(tr, points, dir_name):
 ##
 
 def exportPavement(points_build_f, lab, dirNames):
+    """
+    Export mesh pavement to an OFF file.
+
+    Parameters:
+    - points_build_f: vertices of the OFF file
+    - lab: lab from DefineLabels that define polygon-holes structure
+    - dirNames: string, directory path + filename prefix
+    """
+
     aus = np.arange(points_build_f.shape[0])
     nameFile = f"{dirNames}/pavement_polygon.off"
 
@@ -282,6 +311,15 @@ def exportPavement(points_build_f, lab, dirNames):
 ##
 
 def exportRoof(points_build_r, lab, dirNames):
+    """
+    Export mesh roof to an OFF file.
+
+    Parameters:
+    - points_build_f: vertices of the OFF file
+    - lab: lab from DefineLabels that define polygon-holes structure
+    - dirNames: string, directory path + filename prefix
+    """
+
     aus = np.arange(points_build_r.shape[0])
     nameFile = f"{dirNames}/roof_polygon.off"
     
@@ -314,6 +352,17 @@ def exportRoof(points_build_r, lab, dirNames):
 ## -------------------------------------------------------------------------------
 
 def main(building_footprints,las_path,temp_fold):
+    """
+    Main loop for each building, that export each building of the footprints with 
+    enough descriptive points in the lidar scan in three distinct OFF files, to be 
+    processed in the next Lid2Lod steps. A folder is created for each building. 
+
+    Parameters:
+        - building_footprints (str): path to the .shp file with the building footprints
+        - las_path (str): path to the .las file of the aerial lidar scan
+        - temp_fold (str): path to the output folder/files
+
+    """
 
     ## Read pointcloud and assign attributes
 
@@ -331,7 +380,7 @@ def main(building_footprints,las_path,temp_fold):
     for i in range(0, len(M)):
 
         # Computing other_aus, control, X, Y, xy, zMin, building
-        other_aus,X,Y,building = ReduceScopeWhatDoIDo1(xyz,M[i],other)
+        other_aus,X,Y,building = PointSelectionAndDataStructure(xyz,M[i],other)
 
         if building.shape[0] > X.shape[0]:
             if building.shape[0] > 50000:
@@ -358,9 +407,6 @@ def main(building_footprints,las_path,temp_fold):
             else:
                 zMin = zMin_default
             zMax = np.max(building[:, 2])
-
-
-
 
             points_aus_ground = np.zeros((xy.shape[0],6))
 

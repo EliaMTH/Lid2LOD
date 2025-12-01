@@ -8,8 +8,12 @@ import argparse
 def minBoundingBox(X):
     """
     Fully faithful translation of the MATLAB minBoundingBox.m
-    Input:  X is a 2×n numpy array
-    Output: bb is a 2×4 numpy array of bounding box corners
+
+    Parameters:
+        - X (np.ndarray): Nx3 list of points
+    
+    Returns:
+        - bb (np.ndarray): 2×4 array of bounding box corners
     """
 
     # ---- convex hull ----
@@ -23,38 +27,31 @@ def minBoundingBox(X):
     T = np.mod(T, np.pi/2)
     T = np.unique(T)
 
-    # ---- construct the R matrix exactly as MATLAB does ----
-    # MATLAB code:
-    # R = cos( reshape(repmat(T,2,2),2*length(T),2)
-    #          + repmat([0 -pi ; pi 0]/2,length(T),1) );
-    #
-    # Build A = repmat(T, 2, 2) then reshape
-    A = np.tile(T, (2, 2))  # shape (2, 2*len(T))
+    # ---- construct the R matrix
+    A = np.tile(T, (2, 2)) 
     A = np.reshape(A, (2*len(T), 2), order='F')
 
-    # B = repmat([0 -pi; pi 0]/2, length(T), 1)
     B = np.array([[0, -np.pi], [np.pi, 0]]) / 2
     B = np.tile(B, (len(T), 1))
 
-    R = np.cos(A + B)  # shape (2*len(T), 2)
+    R = np.cos(A + B)  
 
     # ---- rotate convex hull CH using all angles ----
-    RCH = R @ CH  # (2*len(T)) × k
+    RCH = R @ CH 
     RCH = RCH
 
     # ---- compute bounding sizes for each rotation ----
-    bsize = np.max(RCH, axis=1) - np.min(RCH, axis=1)  # length 2*nAngles
-    bsize = bsize.reshape(2, -1, order='F')            # 2 × nAngles
-    area = np.prod(bsize, axis=0)                      # nAngles
+    bsize = np.max(RCH, axis=1) - np.min(RCH, axis=1)  
+    bsize = bsize.reshape(2, -1, order='F')            
+    area = np.prod(bsize, axis=0)                  
 
     # ---- find minimal area ----
     i = np.argmin(area)
 
     # ---- compute bounding box in rotated frame ----
-    # Rf = R(2*i+[-1 0], :)
     row1 = 2*i - 2 
     row2 = 2*i - 1
-    Rf = np.vstack((R[row1, :], R[row2, :]))           # 2×2
+    Rf = np.vstack((R[row1, :], R[row2, :]))     
 
     bound = Rf @ CH
     bmin = np.min(bound, axis=1)
@@ -62,13 +59,6 @@ def minBoundingBox(X):
 
     Rf = Rf.T
 
-    # ---- compute final bounding box corners ----
-    # MATLAB:
-    # bb(:,4) = bmax(1)*Rf(:,1) + bmin(2)*Rf(:,2)
-    # bb(:,1) = bmin(1)*Rf(:,1) + bmin(2)*Rf(:,2)
-    # bb(:,2) = bmin(1)*Rf(:,1) + bmax(2)*Rf(:,2)
-    # bb(:,3) = bmax(1)*Rf(:,1) + bmax(2)*Rf(:,2)
-    #
     bb = np.zeros((2, 4))
 
     bb[:, 3] = bmax[0] * Rf[:, 0] + bmin[1] * Rf[:, 1]
@@ -113,35 +103,27 @@ def main(las_path,outname):
     other = xyz[pt_classification == 2].astype(float)
     xyz   = xyz[pt_classification == 6].astype(float)
 
-    #------------------------------------------
+    
     # Compute min bounding box on (other; xyz)
-    #------------------------------------------
     aus = np.vstack((other, xyz))
-    mBB = minBoundingBox(aus[:, :2].T)      # 4×2 array like MATLAB mBB'
+    mBB = minBoundingBox(aus[:, :2].T)      
 
-    # Rearrange to match MATLAB structure  
-    # xy = np.zeros((mBB.shape[1], 3))
-    # xy[:, :2] = mBB
     xy = np.hstack((mBB.T, np.zeros((mBB.shape[1], 1))))
 
-# mBB is 2×4 in MATLAB, so transpose to 4×2
     xy = np.zeros((mBB.shape[1], 3))
     xy[:, :2] = mBB.T
 
-    #------------------------------------------
+    
     # Add small space around BB  (T = 100)
-    #------------------------------------------
     T = 100
     xy[0, 0] += T;   xy[0, 1] -= T
     xy[1, 0] -= T;   xy[1, 1] -= T
     xy[2, 0] -= T;   xy[2, 1] += T
     xy[3, 0] += T;   xy[3, 1] += T
 
-    #------------------------------------------
+    
     # REFINE BOUNDARY (XY)
-    #------------------------------------------
     xy_res = 15
-
     xy_aus = np.vstack((xy, xy[0]))   # append first point to close
 
     pp_list = []
@@ -153,19 +135,17 @@ def main(las_path,outname):
 
     xy = np.vstack(pp_list)
 
-    #------------------------------------------
+    
     # Project on ground points "other"
-    #------------------------------------------
     tree = KDTree(other[:, :2])
     _, idx = tree.query(xy[:, :2])
     xy = np.column_stack((xy, other[idx, 2]))
 
-    # Reverse (MATLAB: xy = xy(end:-1:1,:))
+    # Reverse 
     xy = xy[::-1, :]
 
-    #------------------------------------------
+    
     # SAVE OFF FILE
-    #------------------------------------------
     outpath = outname if outname.endswith(".off") else outname + ".off"
 
     with open(outpath, "w") as f:
