@@ -34,6 +34,10 @@ RUN pip3 install numpy
 # ------------------------------------------------------------
 COPY /CPP1 /CPP1
 
+RUN test -d /CPP1/cinolib && \
+    test "$(ls -A /CPP1/cinolib)" || \
+    (echo "ERRORE: /CPP1/cinolib not found or folder is empty!" && exit 1)
+
 # ------------------------------------------------------------
 # 4. Build triangulate_city
 # ------------------------------------------------------------
