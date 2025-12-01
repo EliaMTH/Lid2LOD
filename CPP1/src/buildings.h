@@ -37,7 +37,10 @@ std::vector<std::string> load_buildings_dirs(const std::string &buildings_path)
         buildings_dirs.push_back(dir);
     }
 
-    assert(!buildings_dirs.empty());
+    if (buildings_dirs.empty()) {
+	std::cerr << "buildings_dirs is empty!" << std::endl;
+        assert(false);
+    }
     return buildings_dirs;
 }
 
@@ -130,8 +133,8 @@ Trimesh<> create_building_mesh(const std::string &building_path)
     /********************************* BUILDING **********************************/
 
     // merge roof and facades
-    Trimesh<> building = facades_tri;
-//    merge_meshes_at_coincident_vertices(roof_tri, facades_tri, building);
+    Trimesh<> building;
+    merge_meshes_at_coincident_vertices(roof_tri, facades_tri, building);
     building.mesh_data().filename = building_path;
 
     // translate back to the original position
