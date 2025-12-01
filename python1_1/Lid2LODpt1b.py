@@ -7,7 +7,7 @@ import argparse
 
 def minBoundingBox(X):
     """
-    Fully faithful translation of the MATLAB minBoundingBox.m
+    Computation of minimal bounding box of 2D points. 
 
     Parameters:
         - X (np.ndarray): Nx3 list of points
@@ -17,7 +17,7 @@ def minBoundingBox(X):
     """
 
     # ---- convex hull ----
-    points = X.T  # SciPy ConvexHull expects Nx2
+    points = X.T  
     hull = ConvexHull(points)
     CH = X[:, hull.vertices]   # 2 × k
 
@@ -98,6 +98,23 @@ def read_las_file(file_path):
 # --------------------------------------------------
 
 def main(las_path,outname):
+    """
+    Processes a LAS file to generate an OFF ground_polygon around the classified points.
+    
+    Steps performed:
+    - Reads point cloud data and separates ground and building points.
+    - Computes a minimal bounding box around the selected classes.
+    - Expands and refines the bounding box into a detailed boundary polyline.
+    - Projects the boundary onto ground elevation via nearest-neighbor search.
+    - Writes the resulting 3D polygon to an OFF file.
+    
+    Parameters:
+        - las_path (str): Path to the input .las file.
+        - outname (str): Output filename for the generated .off boundary.
+    
+    Returns:
+        None (writes output file to disk).
+    """
     xyz, pt_classification = read_las_file(las_path)
 
     other = xyz[pt_classification == 2].astype(float)
