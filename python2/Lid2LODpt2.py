@@ -9,6 +9,16 @@ import numpy as np
 ## -------------------------------------------------------------------------------
 
 def off_to_dict(filepath):
+    """ 
+    Parses an OFF file into a dictionary with vertices and geometry.
+
+    Parameters:
+        - filepath (str): Path to the OFF file to parse.
+
+    Returns:
+        - result (dict): Dictionary containing the 'geometry' (list of faces) and 'vertices' (list of vertex coordinates).
+    """
+
     with open(filepath, "r") as f:
         lines = [line.strip() for line in f if line.strip()]
     
@@ -45,6 +55,16 @@ def off_to_dict(filepath):
 
 
 def merge_off_models(models, merged_name="merged_buildings"):
+    """ 
+    Merges multiple OFF parsed models into one, ensuring unique vertices and adjusted geometry indices.
+
+    Parameters:
+    - models (list of dict): List of OFF model dictionaries, each containing 'vertices' and 'geometry'.
+    - merged_name (str, optional): Name for the merged model. Default is 'merged_buildings'.
+
+    Returns:
+    - merged_model (dict): Merged model with unique vertices and updated geometry indices.
+    """
     all_vertices = []
     all_geometry = []
 
@@ -95,6 +115,15 @@ def merge_off_models(models, merged_name="merged_buildings"):
 import os
 
 def off_to_dict_walls(filepath):
+    """ 
+    Parses an OFF file representing walls into a dictionary with vertices and faces.
+
+    Parameters:
+    - filepath (str): Path to the OFF file to parse.
+
+    Returns:
+    - result (dict): Dictionary containing the 'geometry' (list of faces) and 'vertices' (list of vertex coordinates).
+    """
     with open(filepath, "r") as f:
         lines = [line.strip() for line in f if line.strip()]
     
@@ -127,6 +156,15 @@ def off_to_dict_walls(filepath):
     return result
 
 def parse_OFF_building(building_path):
+    """ 
+    Parses a building dataset from multiple OFF files (pavement, roof, and walls) and merges them.
+
+    Parameters:
+    - building_path (str): Path to the building folder containing OFF files for pavement, roof, and walls.
+
+    Returns:
+    - buildings_data (dict): Merged building data with geometry and vertices.
+    """
     buildings_data_f = off_to_dict(f"{building_path}/pavement_polygon.off")
     buildings_data_r = off_to_dict(f"{building_path}/roof_polygon.off")
     buildings_data_w = off_to_dict_walls(f"{building_path}/facades.off")
@@ -140,7 +178,7 @@ def parse_OFF_building_dataset(main_folder):
     Parses all subfolders in a main folder recursively, 
     running parse_OFF_building on folders containing the required OFF files.
 
-    Args:
+    Parameters:
         main_folder (str): Path to the main folder containing building subfolders.
 
     Returns:
@@ -166,17 +204,19 @@ def parse_OFF_building_dataset(main_folder):
     return all_buildings_data
 
 def create_cityjson(buildings=None, output_file="city.json"):
+    """ 
+    Creates a CityJSON file from parsed building data.
 
+    Parameters:
+    - buildings (list of dict, optional): List of building data dictionaries (e.g., from `parse_OFF_building_dataset`). Default is `None`.
+    - output_file (str, optional): Path to the output CityJSON file. Default is "city.json".
+
+    Returns:
+    - None: Writes the CityJSON to the specified output file.
+    """
     # Global vertex list and mapping to deduplicate
     global_vertices = []
     vertex_map = {}
-
-    # def get_vertex_index(vertex):
-    #     vtuple = tuple(vertex)
-    #     if vtuple not in vertex_map:
-    #         vertex_map[vtuple] = len(global_vertices)
-    #         global_vertices.append(vertex)
-    #     return vertex_map[vtuple]
     
     def get_vertex_index(vertex, vertices):
         """Map a vertex or index to a global index."""
@@ -262,12 +302,21 @@ def create_cityjson(buildings=None, output_file="city.json"):
 
     print(f"CityJSON written to {output_file}")
 
-## -------------------------------------------------------------------------------
-## ---------------------------------- MAIN -------------------------------
-## -------------------------------------------------------------------------------
+## --------------------------------------------------------------------
+## ---------------------------------- MAIN ----------------------------
+## --------------------------------------------------------------------
 
 def main(working_folder,outpath):
-    print
+    """ 
+    Main function that processes the input folder and generates a CityJSON output file.
+
+    Parameters:
+    - working_folder (str): Path to the folder containing building data.
+    - outpath (str): Path to the output file for the CityJSON.
+
+    Returns:
+    - None: Executes the CityJSON creation process.
+    """
     bb = parse_OFF_building_dataset(working_folder)
     create_cityjson(list(bb.values()), outpath)
 
