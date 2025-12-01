@@ -1,4 +1,4 @@
-# Lid2LOD – Generating LOD1 Urban Models from Airborne LiDAR
+# Lid2LOD: Generating LOD1 Urban Models from Airborne LiDAR
 
 This repository contains a fully reproducible Docker environment for running **Lid2LOD**, a processing pipeline that generates 3D building models from:
 
