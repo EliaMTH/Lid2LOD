@@ -1,15 +1,13 @@
-# [!!! WARNING: we are still completing this repository, for a smoother experience come back next week! Our apologies in advance. If you are interested, send us an email and we will notify you once we're done! Check our contacts below!]
-
 # Lid2LOD – Generating LOD1 Urban Models from Airborne LiDAR
 
-This repository contains a fully reproducible Docker environment for running **Lid2LOD**, a 3-step processing pipeline that generates 3D building models from:
+This repository contains a fully reproducible Docker environment for running **Lid2LOD**, a processing pipeline that generates 3D building models from:
 
-* **Building footprints** (`.shp` and eventual shapefile components .shx, .dbf, etc.)
-* **Point cloud** (`.las`)
+* a **Building footprints** file (`.shp` and eventual shapefile components .shx, .dbf, etc.),
+* a **Point cloud** file (`.las`).
 
 ---
 
-## Building the Docker Image
+## Building
 First, you should have docker on your machine. We tested this project using https://www.docker.com/products/docker-desktop/
 
 From the root of the project run the following command:
@@ -25,19 +23,18 @@ Linux containers expect **LF** only. Using CRLF causes Docker to fail with error
 entrypoint.sh: not found
 ```
 
-To fix this, configure your editor (e.g., VS Code) to save shell scripts with **LF** by default.
+To fix this, configure your editor to save shell scripts with **LF** by default.
 
 
-## Running the Pipeline
+## Running 
 
 Prepare a folder on your machine containing:
-
 * A building footprint shapefile
   (should include `.shp`, `.dbf`, `.shx`)
-* A `.las` point cloud file [ADD REQUIREMENTS]
+* A `.las` point cloud file (point classification is required, automatic point classification is planned for next Lid2Lod version!)
 * A folder where to store the outputs
 
-You can then run Lid2LOD_v1 by running the following command, depending on your OS.
+You can then run Lid2LOD_v1 by running the following command, depending on your OS:
 
 ### **Run command (Windows)**
 ```powershell
@@ -52,15 +49,36 @@ docker run --rm -v "/path/to/my_data:/data" lid2lod_v1 /data/<buildings_footprin
 
 ## Output
 
-The output folder should contain:
-
+After the process is completed, the output folder contains 4 files:
 * A mesh containing all buildings (`buildings_mesh.off`)
 * A mesh of the ground (`ground_mesh.off`)
 * A mesh of the city (`city_mesh.off`)
 * A CityJSON model (`city_JSON.city.json`)
 
-## REFERENCE - How to cite our work
-https://diglib.eg.org/items/85255f56-244f-4ee9-a38b-27f1fdf20d48
+## Reference - How to cite our work
+This work was presented during STAG2025, with a paper by the title _LiD2LOD: Generating LOD1 Urban Models from Airborne LiDAR_. 
+You can access the publication through the Eurographics Digital Library:
+
+* [**DIGLIB proceedings page**](https://diglib.eg.org/items/85255f56-244f-4ee9-a38b-27f1fdf20d48)
+
+* [**Direct PDF link**](https://diglib.eg.org/server/api/core/bitstreams/936212f9-a9aa-4b6c-80e2-f7bd8e092ac1/content)
+
+If you use this work in your research, please cite it as follows:
+
+```bibtex
+@inproceedings{10.2312:stag.20251325,
+  booktitle = {Smart Tools and Applications in Graphics - Eurographics Italian Chapter Conference},
+  editor = {Comino Trinidad, Marc and Mancinelli, Claudio and Maggioli, Filippo and Romanengo, Chiara and Cabiddu, Daniela and Giorgi, Daniela},
+  title = {{LiD2LOD: Generating LOD1 Urban Models from Airborne LiDAR}},
+  author = {Sorgente, Tommaso and Moscoso Thompson, Elia and Romanengo, Chiara},
+  year = {2025},
+  publisher = {The Eurographics Association},
+  ISSN = {2617-4855},
+  ISBN = {978-3-03868-296-7},
+  DOI = {10.2312/stag.20251325}
+}
+```
+
 
 ## Contacts
 We appreciate any kind of feedback! Please reach us at:
