@@ -366,10 +366,16 @@ def main(building_footprints,las_path,temp_fold):
 
     ## Read pointcloud and assign attributes
 
-    xyz, pt_classification = read_las_file(las_path) # Should already be numpy array
+    xyz, pt_classification = read_las_file(las_path)
 
     other = xyz[pt_classification == 2, :].astype(float)
-    xyz = xyz[pt_classification == 6, :].astype(float)
+
+    unique_classes = set(pt_classification)
+
+    if unique_classes.issubset({1, 2}): # Addresses different classifications
+        xyz = xyz[pt_classification == 1, :].astype(float)
+    else:
+        xyz = xyz[pt_classification == 6, :].astype(float)
 
 
     ## Read shapefile
