@@ -10,7 +10,7 @@ INPUT4="$3" # <output_file_path_and_name>
 WORKING_FOLDER="/working_folder"
 
 echo "---------------------------------------"
-echo "Running pt1..."
+echo "Running pt1... "
 echo "---------------------------------------"
 python3 /python1/Lid2LODpt1.py "$INPUT1" "$INPUT2" "$WORKING_FOLDER"
 python3 /python1_1/Lid2LODpt1b.py "$INPUT2" "$WORKING_FOLDER/ground_polygon.off"
